@@ -1,0 +1,71 @@
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+get_ipython().magic('matplotlib inline')
+
+df = pd.read_csv('Classified Data')
+
+from sklearn.preprocessing import StandardScaler
+
+scl = StandardScaler()
+
+
+df.drop('Unnamed: 0',axis=1,inplace=True)
+
+
+scl.fit(df.drop('TARGET CLASS',axis=1))
+
+
+scl_f = scl.transform(df.drop('TARGET CLASS',axis=1))
+
+
+scl_df = pd.DataFrame(scl_f,columns=df.columns[:-1])
+
+
+
+from sklearn.cross_validation import train_test_split
+
+
+X_train, X_test, y_train, y_test = train_test_split(scl_df, df['TARGET CLASS'], test_size=0.3, random_state=42)
+
+
+
+from sklearn.neighbors import KNeighborsClassifier
+
+
+knn = KNeighborsClassifier(n_neighbors=10)
+
+
+knn.fit(X_train,y_train)
+
+
+pred = knn.predict(X_test)
+
+from sklearn.metrics import classification_report,confusion_matrix
+
+print(classification_report(y_test,pred))
+
+
+error_test=[]
+
+for i in range(1,200):
+    knn = knn = KNeighborsClassifier(n_neighbors=i)
+    knn.fit(X_train,y_train)
+    pred_i = knn.predict(X_test)
+    error_test.append(np.mean(pred_i != y_test))
+
+
+plt.figure(figsize=(20,10))
+plt.plot(range(1,200),error_test,color='blue', linestyle='dashed', marker='o',
+         markerfacecolor='red', markersize=4)
+
+
+knn = KNeighborsClassifier(n_neighbors=140)
+knn.fit(X_train,y_train)
+pred = knn.predict(X_test)
+print(classification_report(y_test,pred))
+
+
+
